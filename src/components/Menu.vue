@@ -2,7 +2,11 @@
    <div class="container" id="menu">
     <div class="input-group" id="input-group">
         <span class="input-group-text" id="basic-addon1">ID</span>
-        <input type="text" class="form-control" placeholder="Find Unit" aria-label="Find Unit" aria-describedby="basic-addon1">
+        <input @input.prevent="sendId" v-model="id" type="text" class="form-control" placeholder="Find Unit" aria-label="Find Unit" aria-describedby="basic-addon1">
+    </div>
+    <img src="../assets/ibm-logo_3.png" alt="" id="img">
+    <div class="form">
+
     </div>
    </div>
 </template>
@@ -11,13 +15,18 @@
 <script>
 
 import Map from './Map.vue';
-
 export default{
     data(){
         return{
-        
+            id: ''
         }
     },
+
+    methods:{
+        sendId(){
+            console.log("ola")
+        }
+    }
         
 }
 
@@ -30,16 +39,20 @@ export default{
     position: relative;
     height: 3pc;
     top: 10px;
-    background-color: red;
     flex: auto;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+#img{
+    height: 200%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
 }
 
 #input-group{
-    width: 50%;
+    width: 20%;
     display: flex;
-    margin: auto;
-    justify-content: center;
-    align-items: center;
-    position: relative;
 }
 </style>

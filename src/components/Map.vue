@@ -7,7 +7,7 @@
 import { Map } from 'leaflet';
 import { onMounted } from 'vue';
 import socket from '../Server/socketClient';
-import { getUnits } from '@/store/store';
+
 export default{
 
     data(){
@@ -23,28 +23,10 @@ export default{
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(this.map);
 
-            socket.addEventListener("message", (event) => {
-                console.log(getUnits())
-                /*
-                try{
-                    let temp = getUnits()
-                    let x = temp['x']
-                    let y = temp['y']
+            socket.onmessage = (event) => {
+                console.log(event.data)
+            }
 
-                    L.marker([x,y]).addTo(this.map)
-                }catch(error){
-                    console.log(error)
-                }
-                */
-            })
-    },
-
-    methods:{
-        addMarker(){
-            L.marker([51.5, -0.09]).addTo(this.map)
-            .bindPopup('A pretty CSS popup.<br> Easily customizable.')
-            .openPopup()
-        }
     }
 
 }

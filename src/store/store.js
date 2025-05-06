@@ -1,14 +1,41 @@
-let units = []
+import { WebSocketServer } from "ws"
 
-export function addUnit(unit){
-    units.push(unit)
+const wss = new WebSocketServer({port:8080})
+
+const unit = [];
+let thereAreUnits = false;
+
+wss.on(('connected'), ()=>{
+    console.log("Client connected")
+})
+
+export function addUnit(msg){
+
+    if(!thereAreUnits){
+        console.log("We have a unit")
+        thereAreUnits = true;
+        start()
+    }
+
+    unit.push(msg)
+    console.log("add", msg)
+    console.log(unit.length)
 }
 
-export function getUnits(){
-    return units[0]
+function start(){
+    setInterval(() => {
+        wss.clients.forEach(client => {
+            if(client.readyState == 1){
+
+                const values = (getUnits()).toString()
+
+                client.send(values)
+            }
+        })
+    }, 5000);
 }
 
-export function getUnitByFilter(filter){
-    let filtered = units
-    return filtered
+function getUnits(){
+    return unit
 }
+
