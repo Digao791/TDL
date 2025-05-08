@@ -11,14 +11,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "concurrently": "^9.1.2",
+    "dotenv": "^16.5.0",
     "leaflet": "^1.9.4",
+    "leaflet-markers-canvas": "^0.2.2",
+    "leaflet-tracksymbol": "^1.0.8",
     "pinia": "^3.0.2",
     "vue": "^3.5.13",
-    "vue3-leaflet": "^1.0.50",
     "ws": "^8.18.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
+    "leaflet": "^1.9.4",
+    "leaflet-markers-canvas": "^0.2.2",
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2"
   },
