@@ -13,6 +13,7 @@
   "dependencies": {
     "concurrently": "^9.1.2",
     "dotenv": "^16.5.0",
+    "fs": "^0.0.1-security",
     "leaflet": "^1.9.4",
     "leaflet-markers-canvas": "^0.2.2",
     "leaflet-tracksymbol": "^1.0.8",

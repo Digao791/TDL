@@ -8,6 +8,7 @@
 <script>
 import Menu from './components/Menu.vue';
 import Map from './components/Map.vue';
+
 export default{
 
   components: {

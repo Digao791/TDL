@@ -2,12 +2,15 @@
    <div class="container" id="menu">
     <div class="input-group" id="input-group">
         <span class="input-group-text" id="basic-addon1">ID</span>
-        <input @input.prevent="sendId" v-model="id" type="text" class="form-control" placeholder="Find Unit" aria-label="Find Unit" aria-describedby="basic-addon1">
+        <input @keyup.enter="call" v-model="id" type="text" class="form-control" placeholder="Find Unit" aria-label="Find Unit" aria-describedby="basic-addon1">
     </div>
     <img src="../assets/ibm-logo_3.png" alt="" id="img">
-    <button id="btn" @click.prevent="call">Click Me</button>
-    <div class="form">
-
+   
+    <div class="form" id="filters">
+        <ul v-for="(type) in filters" id="items" class="fle-row">
+            <span>{{ type.type }}</span>
+            <input type="checkbox" name="" id="">
+        </ul>
     </div>
    </div>
 </template>
@@ -15,20 +18,29 @@
 
 <script>
 
+import { useEventBus } from '@/Server/eventBus'
+
+const {emit} = useEventBus()
+
 export default{
     data(){
         return{
             id: '',
             btn:false,
+            filters: [{type: 'type', checked: false},{type: 'type', checked: false},{type: 'type', checked: false},
+            {type: 'type', checked: false},{type: 'type', checked: false},{type: 'type', checked: false}
+            ]
+            
         }
     },
+    
 
     methods:{
-        sendId(){
-            console.log("ola")
+        sendId(id){
+            console.log("Searching ", id)
         },
         call(){
-
+            emit('_id', this.id == '' ? null : this.id)
         }
     }
         
@@ -65,4 +77,19 @@ export default{
     width: 20%;
     display: flex;
 }
+
+#filters{
+    width: 50%;
+    position: relative;
+    
+    right: 0px;
+    justify-content: space-between;
+    display: flex;
+    justify-items: center;
+    flex-flow: row;
+    color: aliceblue;
+}
+
+
+
 </style>

@@ -1,5 +1,6 @@
 <template>
 <div class="mapa" id="map" ref="mapa">
+    
 </div>
 </template>
 
@@ -10,19 +11,19 @@ import socket from '../Server/socketClient';
 import 'leaflet'
 import 'leaflet-tracksymbol'
 import 'leaflet-markers-canvas'
-import { latLng } from 'leaflet';
-import { map } from 'leaflet';
-import { marker } from 'leaflet';
-import { popup } from 'leaflet';
+import { latLng, map, marker, popup } from 'leaflet';
+import { useEventBus } from '@/Server/eventBus';
 
-let units = []
+
+const units = new Map()
+
+const {on} = useEventBus()
 
 export default{
 
     data(){
         return{
-            map: '',
-            teste: String
+            map: ''
         }
     },
 
@@ -32,18 +33,22 @@ export default{
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(this.map);
             
-           
             socket.onmessage = (event) => {
             let unit;
+            
                 try{
                     unit = JSON.parse(event.data)
                 }catch(e){
                     console.log("String nao convertida, ", e)
                 }
-                
-                units.push(this.addMarker(unit))
-                console.log(unit)  
+
+                if(units[unit['id']]) this.updateUnit(unit)
+                else units[unit['id']] = this.addMarker(unit)
             }
+
+            on('_id', (data) => {
+                this.show(units[data])
+            })
             
     },
 
@@ -59,22 +64,39 @@ export default{
                 heading: unit['heading']
            });
 
-           let popup_config = {
-            maxWidth: 100,
-            maxHeight: 100
+            let popup_config = {
+            maxWidth: 500,
+            maxHeight: 500,
+            className: "popup"
            }
 
            trackMarker.bindPopup(this.info(trackMarker), popup_config).addTo(this.map)
            
-           console.log(trackMarker)
            return trackMarker
         },
 
+        updateUnit(unit){            
+
+            let target_id = unit['id']
+
+            units[target_id].setLatLng(latLng(unit['lat'], unit['lng']))
+            units[target_id].setSpeed(unit['speed'])
+            units[target_id].setCourse(unit['course'])
+            units[target_id]._popup.setContent(this.info(units[target_id]))
+            console.log("unit is updated", units[target_id])
+        },
+
         info(track){
-            return `<h3>${track._id}</h2><br>
-                    <h4>Speed ${track._speed}</h4><br>
-                    <h4>Course ${track._course}</h4><br>
-                    <h4>Heading ${track._heading}</h4>`
+            return `<h3 class='titleId'>${track._id}</h3>
+                    <img src="../assets/ship.png" class='img'>
+                    <p>Lat ${track._latlng.lat} Lng ${track._latlng.lng} <p>
+                    <p>Speed ${track._speed}</p>
+                    <p>Course ${track._course}</p>
+                    <p>Heading ${track._heading}</p>`
+        },
+
+        show(unit){
+            this.map.setView([unit._latlng.lat, unit._latlng.lng], 10)
         }
     },
 
@@ -92,5 +114,24 @@ export default{
     height: 90%;
 }
 
+.popup .leaflet-popup-content-wrapper{
+    width: 200px;
+    height: 300px;
+    background-color: whitesmoke;
+    font-size: 12px;
+    border-radius: 1px;
+    line-height: 24px;
+    text-align: center;
+}
+
+.popup .titleId{
+    
+}
+
+.popup .img{
+   width: 100px;
+   height: 100px;
+   content: url("../assets/ship.png");
+}
 
 </style>
