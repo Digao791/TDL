@@ -1,36 +1,23 @@
 <template>
-   <div class="container" id="menu">
+   <div class="" id="menu">
     <div class="input-group" id="input-group">
-        <span class="input-group-text" id="basic-addon1">ID</span>
         <input @keyup.enter="call" v-model="id" type="text" class="form-control" placeholder="Find Unit" aria-label="Find Unit" aria-describedby="basic-addon1">
     </div>
-    <img src="../assets/ibm-logo_3.png" alt="" id="img">
-   
-    <div class="form" id="filters">
-        <ul v-for="(type) in filters" id="items" class="fle-row">
-            <span>{{ type.type }}</span>
-            <input type="checkbox" name="" id="">
-        </ul>
-    </div>
+    
    </div>
 </template>
 
 
 <script>
 
-import { useEventBus } from '@/Server/eventBus'
+import { useEventBus } from '@/server/eventBus'
 
 const {emit} = useEventBus()
 
 export default{
     data(){
         return{
-            id: '',
-            btn:false,
-            filters: [{type: 'type', checked: false},{type: 'type', checked: false},{type: 'type', checked: false},
-            {type: 'type', checked: false},{type: 'type', checked: false},{type: 'type', checked: false}
-            ]
-            
+            id: ''
         }
     },
     
@@ -52,17 +39,18 @@ export default{
 <style>
 
 #menu{
-    display: flex;
+    display: block;
     position: relative;
+    z-index: 10;
     height: 3pc;
-    top: 10px;
-    flex: auto;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
+    width: 800px;
+    margin: auto;
+    opacity: 85%;
 }
 
 #img{
+    display: flex;
+    position: absolute;
     height: 200%;
     object-fit: contain;
     filter: brightness(0) invert(1);
@@ -74,8 +62,14 @@ export default{
 }
 
 #input-group{
-    width: 20%;
+    width: 60%;
     display: flex;
+    margin: auto;
+    top: 20%;
+}
+
+#input-group > input{
+    text-align: center;
 }
 
 #filters{

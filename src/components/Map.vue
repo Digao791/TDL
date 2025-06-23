@@ -1,137 +1,178 @@
 <template>
-<div class="mapa" id="map" ref="mapa">
-    
-</div>
+    <div class="" id="map" ref="mapa"></div>
 </template>
 
 <script>
-import { onMounted, ref } from 'vue';
-import socket from '../Server/socketClient';
+import socket from '../server/socketClient';
 
 import 'leaflet'
 import 'leaflet-tracksymbol'
 import 'leaflet-markers-canvas'
-import { latLng, map, marker, popup } from 'leaflet';
-import { useEventBus } from '@/Server/eventBus';
+import L, { Bounds, latLngBounds } from 'leaflet';
+import { useEventBus } from '@/server/eventBus';
+import test_unit from "../server/test_unit.json"
+import createMarkerFrom from '@/server/MarkerCRUD/markerCreator';
+import updateMarker from '@/server/MarkerCRUD/markerUpdater';
 
+
+const { on } = useEventBus()
+const address = () => fetch('http://0.0.0.0:8080/map').then(response => response.json()).then(
+    value => value.map
+)
 
 const units = new Map()
+const southWest = L.latLng(-85, -180);
+const northEast = L.latLng(85, 180);
 
-const {on} = useEventBus()
 
-export default{
+export default {
 
-    data(){
-        return{
-            map: ''
+    props: ["filters"],
+
+    data() {
+        return {
+            map: '',
         }
     },
 
-    mounted(){
-            this.map = map('map').setView([51.505, -0.09], 13);
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(this.map);
-            
-            socket.onmessage = (event) => {
-            let unit;
-            
-                try{
-                    unit = JSON.parse(event.data)
-                }catch(e){
-                    console.log("String nao convertida, ", e)
-                }
+    mounted() {
+        this.map = L.map('map', {
+            minZoom: 3,
+            maxZoom: 8,
+            maxBoundsViscosity: 1.0,
+            worldCopyJump: false
+        }).setView([0, 0], 0);
 
-                if(units[unit['id']]) this.updateUnit(unit)
-                else units[unit['id']] = this.addMarker(unit)
+        const bounds = L.latLngBounds(southWest, northEast);
+        this.map.setMaxBounds(bounds)
+
+        address().then(mapUrl => {
+            L.tileLayer(mapUrl, {
+                tileSize: 512,
+                zoomOffset: -1,
+                minZoom: 1,
+                maxZoom: 8,
+                Style: null,
+                attribution: "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
+                crossOrigin: true
+            }).addTo(this.map);
+        })
+
+        socket.onmessage = (event) => {
+            let unit;
+            try {
+                unit = JSON.parse(event.data)
+            } catch (e) {
+                console.log("String not converted, ", e)
             }
 
-            on('_id', (data) => {
-                this.show(units[data])
-            })
-            
-    },
-
-    methods:{
-        addMarker(unit){
-    
-           let latlng = latLng(unit['lat'], unit['lng'])
-           let trackMarker = L.trackSymbol(latlng, {
-                trackId: unit['id'],
-                fill: true,
-                speed:unit['speed'],
-                course: unit['course'],
-                heading: unit['heading']
-           });
-
-            let popup_config = {
-            maxWidth: 500,
-            maxHeight: 500,
-            className: "popup"
-           }
-
-           trackMarker.bindPopup(this.info(trackMarker), popup_config).addTo(this.map)
-           
-           return trackMarker
-        },
-
-        updateUnit(unit){            
-
-            let target_id = unit['id']
-
-            units[target_id].setLatLng(latLng(unit['lat'], unit['lng']))
-            units[target_id].setSpeed(unit['speed'])
-            units[target_id].setCourse(unit['course'])
-            units[target_id]._popup.setContent(this.info(units[target_id]))
-            console.log("unit is updated", units[target_id])
-        },
-
-        info(track){
-            return `<h3 class='titleId'>${track._id}</h3>
-                    <img src="../assets/ship.png" class='img'>
-                    <p>Lat ${track._latlng.lat} Lng ${track._latlng.lng} <p>
-                    <p>Speed ${track._speed}</p>
-                    <p>Course ${track._course}</p>
-                    <p>Heading ${track._heading}</p>`
-        },
-
-        show(unit){
-            this.map.setView([unit._latlng.lat, unit._latlng.lng], 10)
+            if (units.get(unit.trackNumberReference)) {
+                updateMarker(units.get(unit.trackNumberReference))
+            }
+            else {
+                let marker = createMarkerFrom(unit).addTo(this.map)
+                units.set(unit.trackNumberReference, marker)
+                this.$emit('unit', Array.from(units.entries()))
+            }
         }
+
+        on('_id', (data) => {
+            let target = Number(data)
+            this.show(units.get(target))
+        })
+
+        //this.doATest()
     },
 
+    watch: {
+        filters: {
+            handler(filters) {
+                this.setFilters(filters);
+            },
+            deep: true
+        },
+    },
+
+    methods: {
+
+        show(unit) {
+            if (unit == null) console.log("Not found")
+            else this.map.setView([unit._latlng.lat, unit._latlng.lng], 7)
+        },
+
+        setFilters(filters) {
+            units.forEach(unit => {
+
+            const unitAffiliation = unit.options._symbol.metadata.affiliation
+            const unitEnvironment = unit.options._symbol.metadata.baseDimension
+           
+            const matchesAffiliation = !filters.selectedAffiliation || unitAffiliation === filters.selectedAffiliation;
+            const matchesEnvironment =
+                filters.selectedEnvironment.length === 0 || filters.selectedEnvironment.includes(unitEnvironment);
+
+            if (matchesAffiliation && matchesEnvironment) {
+                if (!this.map.hasLayer(unit)) this.map.addLayer(unit);
+            } else {
+                if (this.map.hasLayer(unit)) this.map.removeLayer(unit);
+            }
+        })
+        },
+        doATest() {
+            test_unit.forEach(element => {
+                let marker = createMarkerFrom(element).addTo(this.map)
+                units.set(element.trackNumberReference, marker)
+                this.$emit('unit', Array.from(units.entries()))
+            });
+
+            // setInterval(() => {
+            //     units.forEach((unit) => {
+            //         console.log(unit.name)
+            //         unit.options.speed += 10;
+            //         unit._latlng.lat += 10.5;
+            //         unit._latlng.lng = 10.5;
+            //         updateMarker(unit)})
+            // }, 5000)    
+        }
+    }
 }
+
 
 </script>
 
 <style>
-#map{
+#map {
     display: block;
-    position: relative;
-    top: 2%;
+    position: absolute;
     bottom: 1px;
     width: 100%;
-    height: 90%;
+    height: 100%;
+    z-index: 1;
 }
 
-.popup .leaflet-popup-content-wrapper{
-    width: 200px;
-    height: 300px;
-    background-color: whitesmoke;
-    font-size: 12px;
-    border-radius: 1px;
-    line-height: 24px;
-    text-align: center;
+.popup-marker .leaflet-popup-content-wrapper {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(1px);
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    width: auto;
+    max-width: 250px;
+    padding: 10px;
 }
 
-.popup .titleId{
-    
+.popup-marker .leaflet-popup-content {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.popup .img{
-   width: 100px;
-   height: 100px;
-   content: url("../assets/ship.png");
+.milsymbol-icon svg{
+    size: 10px;
+    width: 100%;
+    height: 100%;
+    max-width: 40px;
+    max-height: 40px;
 }
-
 </style>

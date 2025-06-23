@@ -1,0 +1,49 @@
+[{
+    "name": "AirUnit",
+    "identity": "FRIEND",
+    "trackNumberSource": 1234,
+    "trackNumberReference": 5432,
+    "speed": 500,
+    "lat": 53.5,
+    "lng": 7.5,
+    "course": 45,
+    "id" : 32,
+    "type": "UNIT"
+},
+{
+    "name": "LandTrack",
+    "identity": "HOSTILE",
+    "trackNumberSource": 6573,
+    "trackNumberReference": 32121,
+    "speed": 20,
+    "lat": 10.5,
+    "lng": 7.5,
+    "course": 10,
+    "id" : 21,
+    "type": "TRACK"
+},
+{
+    "name": "GroundTrack",
+    "identity": "NEUTRAL",
+    "trackNumberSource": 9234,
+    "trackNumberReference": 43222,
+    "speed": 0,
+    "lat": 30.5,
+    "lng": 37.5,
+    "course": 70,
+    "id" : 22,
+    "type": "TRACK"
+},
+{
+    "name": "OwnUnit",
+    "identity": "",
+    "trackNumberSource": 0,
+    "trackNumberReference": 0,
+    "speed": 10,
+    "lat": 54.8,
+    "lng": 83.0,
+    "course": 45,
+    "id" : 0
+}
+
+]

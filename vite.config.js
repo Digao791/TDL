@@ -13,6 +13,16 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
+   optimizeDeps: {
+    include: ["milsymbol"],
+        esbuildOptions: {
+            // Node.js global to browser globalThis
+            define: {
+                global: 'globalThis',
+            },
+        },
     },
-  }
+  
 })
