@@ -3,28 +3,31 @@ import { getPopUpTextFor } from "./Popup/popup_text";
 
 export default function updateMarker(marker){
 
-            marker.options._symbol.setOptions({
-                speed: marker.options.speed,
-                direction: marker.options.course,
+            let values = marker.options.values
+            let symbol = marker.options._symbol
+
+            symbol.setOptions({
+                speed: values.Speed,
+                direction: values.Course,
             });
 
-            marker.options.icon.options.html = marker.options._symbol.asSVG();
+            marker.options.icon.options.html = symbol.asSVG();
 
-            if (marker._icon) {
-                marker._icon.innerHTML = marker.options._symbol.asSVG();
+            if (marker.icon) {
+                marker.icon.innerHTML = symbol.asSVG();
             }
 
-            marker.setLatLng([marker._latlng.lat, marker._latlng.lng]);
-            marker.options.speed = marker.options.speed;
-            marker.options.course = marker.options.course;
+            marker.setLatLng([values.Position.Latitude, values.Position.Longitude]);
+            values.Speed = values.Speed;
+            values.Course = values.Course;
 
-            marker._popup.setContent(getPopUpTextFor(marker));
+            marker._popup.setContent(getPopUpTextFor(marker.type, values));
 
             const newIcon = L.divIcon({
-                html: marker.options._symbol.asSVG(),
+                html: symbol.asSVG(),
                 className: '',
-                iconSize: [marker.options._symbol.getSize().width, marker.options._symbol.getSize().height],
-                iconAnchor: [marker.options._symbol.getAnchor().x, marker.options._symbol.getAnchor().y]
+                iconSize: [symbol.getSize().width, symbol.getSize().height],
+                iconAnchor: [symbol.getAnchor().x, symbol.getAnchor().y]
             });
 
             marker.setIcon(newIcon);

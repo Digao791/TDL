@@ -10,7 +10,6 @@ import 'leaflet-tracksymbol'
 import 'leaflet-markers-canvas'
 import L, { Bounds, latLngBounds } from 'leaflet';
 import { useEventBus } from '@/server/eventBus';
-import test_unit from "../server/test_unit.json"
 import createMarkerFrom from '@/server/MarkerCRUD/markerCreator';
 import updateMarker from '@/server/MarkerCRUD/markerUpdater';
 
@@ -60,24 +59,27 @@ export default {
 
         socket.onmessage = (event) => {
             let unit;
+            let unitTNR;
             try {
                 unit = JSON.parse(event.data)
+                unitTNR = Object.values((unit.Message))[0]
+                unitTNR = unitTNR.TrackNumberReference ? unitTNR.TrackNumberReference.toString() : unitTNR.TrackNumberSource.toString()
             } catch (e) {
                 console.log("String not converted, ", e)
             }
-
-            if (units.get(unit.trackNumberReference)) {
-                updateMarker(units.get(unit.trackNumberReference))
+            if (units.get(unitTNR)) {
+                updateMarker(units.get(unitTNR))
             }
             else {
                 let marker = createMarkerFrom(unit).addTo(this.map)
-                units.set(unit.trackNumberReference, marker)
+                units.set(unitTNR, marker)
                 this.$emit('unit', Array.from(units.entries()))
             }
         }
 
         on('_id', (data) => {
-            let target = Number(data)
+            let target = data.padStart(5, '0')
+            console.log("Target " + target)
             this.show(units.get(target))
         })
 
@@ -116,22 +118,6 @@ export default {
                 if (this.map.hasLayer(unit)) this.map.removeLayer(unit);
             }
         })
-        },
-        doATest() {
-            test_unit.forEach(element => {
-                let marker = createMarkerFrom(element).addTo(this.map)
-                units.set(element.trackNumberReference, marker)
-                this.$emit('unit', Array.from(units.entries()))
-            });
-
-            // setInterval(() => {
-            //     units.forEach((unit) => {
-            //         console.log(unit.name)
-            //         unit.options.speed += 10;
-            //         unit._latlng.lat += 10.5;
-            //         unit._latlng.lng = 10.5;
-            //         updateMarker(unit)})
-            // }, 5000)    
         }
     }
 }

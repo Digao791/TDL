@@ -50,16 +50,15 @@ const Status = Object.freeze({
     FullToCapacity: 'F'
 })
 
-function parseMessage(message){
+function parseMessage(Dimension, affiliation, OwnUnit){
     let symbolIdentificationCode = 'S'
 
     //Is it OwnUnit ?
-    if(message.name.includes("OwnUnit")) return "SFS-O---------G"
+    if(OwnUnit) return "SFS-O---------G"
 
     //Find the Identity
     Object.keys(Affiliation).some(value => {
-        if(message.type == "UNIT"){ symbolIdentificationCode = symbolIdentificationCode.concat(Affiliation.FRIEND.toString()); return true;}
-        if(value == message.identity){
+        if(value == affiliation){
             symbolIdentificationCode = symbolIdentificationCode.concat(Affiliation[value].toString())
             return true;
         }
@@ -67,7 +66,7 @@ function parseMessage(message){
 
     // Find the Message Type
     Object.keys(Battle_Dimension).some(value => {
-        if (message.name.toString().includes(value)){
+        if (Dimension.includes(value)){
             symbolIdentificationCode = symbolIdentificationCode.concat(Battle_Dimension[value].toString())
             return true;
         }
@@ -79,9 +78,9 @@ function parseMessage(message){
 
     return symbolIdentificationCode
 }
-export function getCodeMessageFrom(data){
+export function getCodeMessageFrom(type, Affiliation, OwnUnit){
 
-    let final_sidc = parseMessage(data)
+    let final_sidc = parseMessage(type, Affiliation, OwnUnit)
 
     return final_sidc
 }
